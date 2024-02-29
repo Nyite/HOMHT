@@ -5,8 +5,8 @@ function(load_dependencies)
     # Load Eigen lib
     CPMAddPackage(
     NAME Eigen
-    VERSION 3.2.8
-    URL https://gitlab.com/libeigen/eigen/-/archive/3.2.8/eigen-3.2.8.tar.gz
+    VERSION 3.4.0
+    URL https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.gz
     DOWNLOAD_ONLY YES 
     )
     if(Eigen_ADDED)
@@ -15,7 +15,7 @@ function(load_dependencies)
     endif()
 
     # Load matplotlib
-    CPMAddPackage("gh:lava/matplotlib-cpp#master")
+    CPMAddPackage("gh:Nyite/matplotlib-cpp#master")
     target_include_system_directories(matplotlib_cpp INTERFACE "${matplotlib_cpp_SOURCE_DIR}")
 
     # Load GTest
