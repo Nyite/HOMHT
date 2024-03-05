@@ -16,7 +16,7 @@ class GNN_Tracker final
     static inline int current_tick = -1;
     MeasurementVec free_measurements;
 
-    void strobe(const MeasurementVec &measurements);
+    void strobe(MeasurementVec measurements);
     void kalman_predict();
     void filter_tarcks();
     void kalman_update();

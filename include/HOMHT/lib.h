@@ -32,9 +32,8 @@ struct MeasurementAssociation
         return *this;
     }
 
-    MeasurementAssociation &miss_if_unset()
+    MeasurementAssociation &miss()
     {
-        if (set) return *this;
         ++missing_count;
         consecutive_count = 0;
         return *this;

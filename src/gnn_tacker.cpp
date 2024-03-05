@@ -85,41 +85,44 @@ void GNN_Tracker::kalman_predict()
     for (auto &track : tracks) {
         track.x = F * track.x;
         track.P = F * track.P * F_T + Q;
-        track.B = H * track.P * H_T + R; // Inovation covariance
         track.pred_history.push_back(H * track.x);
     }
 }
 
-void GNN_Tracker::strobe(const MeasurementVec &measurements)
+/*
+ * Note: track order dependent approach.
+ *       Can result in mismatch of
+ *       2 close measurements to 2 close tracks
+ */
+void GNN_Tracker::strobe(MeasurementVec measurements)
 {
-    std::optional<size_t> index;
+    for (auto &track : tracks) {
+        track.z.reset();
+        track.B = H * track.P * H_T + R; // Inovation covariance
 
-    for (auto &track : tracks) track.z.reset();
-    for (size_t m_i = 0; m_i < measurements.size(); ++m_i) {
-        const auto &z = measurements[m_i];
+        std::optional<size_t> strobe_i;
         double min_dist = std::numeric_limits<double>::max();
+        for (size_t m_i = 0; m_i < measurements.size(); ++m_i) {
+            const auto &z = measurements[m_i];
 
-        for (size_t t_i = 0; t_i < tracks.size(); ++t_i) {
-            auto &track = tracks[t_i];
             const auto v = z - H * track.x; // Inovation
             const auto MDSQ = square(v / track.B * v); // Mahalanobis distance
-
             if (MDSQ > sqrt(track.B) || MDSQ >= min_dist) continue; // Filtering
             min_dist = MDSQ;
-            index = t_i;
+            strobe_i = m_i;
+            track.z = z;
+            track.v = v;
         }
 
-        if (index) {
-            auto &track = tracks[index.value()];
-            if (track.z) free_measurements.push_back(track.z.value);
-            track.z = z;
-            track.v = z - H * track.x;
-            index.reset();
+        if (strobe_i) {
+            std::swap(measurements[strobe_i.value()], measurements.back());
+            measurements.pop_back();
         } else {
-            free_measurements.push_back(z);
+            track.z.miss();
         }
     }
-    for (auto &track : tracks) track.z.miss_if_unset();
+
+    free_measurements = std::move(measurements);
 }
 
 void GNN_Tracker::filter_tarcks()
