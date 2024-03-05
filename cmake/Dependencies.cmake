@@ -2,6 +2,9 @@ function(load_dependencies)
     include(cmake/CPM.cmake)
     include(cmake/SystemLink.cmake)
 
+    # Load fmt
+    CPMAddPackage("gh:fmtlib/fmt#10.2.1")
+
     # Load Eigen lib
     CPMAddPackage(
     NAME Eigen

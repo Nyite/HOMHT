@@ -2,6 +2,7 @@ if(BUILD_TESTING)
     file(GLOB TEST_SRC test_*.cpp)
     add_executable(Test ${TEST_SRC})
     target_link_system_library(Test PRIVATE gtest_main)
+    target_link_system_library(Test PRIVATE fmt)
     target_link_system_library(Test PRIVATE Eigen)
     target_link_system_library(Test PRIVATE matplotlib_cpp)
 
