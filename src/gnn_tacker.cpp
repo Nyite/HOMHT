@@ -3,14 +3,15 @@
 #include <matplotlibcpp.h>
 
 namespace HOMHT {
-GNN_Tracker::Track::Track(const Measurement &z)
-  : x{ z, 0 }, P(P_init), v{}, B(B_init), id(++creation_count), creation_tick(HOMHT::current_tick)
+GNN_Tracker::Track::Track(const Measurement &init_freq)
+  : x{ init_freq, 0 }, P(P_init), v{}, B(B_init), id(++creation_count),
+    creation_tick(HOMHT::current_tick)
 {
     x_history.reserve(Simulation_Duration);
     pred_history.reserve(Simulation_Duration);
     B_history.reserve(Simulation_Duration);
 
-    pred_history.push_back(z);
+    pred_history.push_back(init_freq);
     update_hustory();
     trace("Created {}", *this);
 }
