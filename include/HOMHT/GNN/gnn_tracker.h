@@ -25,7 +25,7 @@ class GNN_Tracker final
 
 struct GNN_Tracker::Track
 {
-    Track(const Measurement &z = Target_Freq);
+    Track(const Measurement &init_freq = Target_Freq);
     inline void update_hustory();
     inline bool delete_pending() const;
     inline bool confirmation_panding() const;

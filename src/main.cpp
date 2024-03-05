@@ -23,6 +23,8 @@ int main()
         plt::plot(std::vector<int>(measurements.size(), current_tick), measurements, "sk");
         measurements.clear();
     }
+
+    --current_tick; // Draw up to the last tick
     for (const auto &track : gnn.tracks) track.draw_history();
 
     std::vector<int> xticks(HOMHT::Simulation_Duration);
