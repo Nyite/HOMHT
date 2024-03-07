@@ -1,4 +1,4 @@
-#include "HOMHT/GNN/gnn_tracker.h"
+#include "HOMHT/gnn_tracker.h"
 #include <fmt/core.h>
 #include <matplotlibcpp.h>
 
@@ -7,15 +7,10 @@ GNN_Tracker::Track::Track(const Measurement &init_freq)
   : x{ init_freq, 0 }, P(P_init), v{}, B(B_init), id(++creation_count),
     creation_tick(HOMHT::current_tick)
 {
-    x_history.reserve(Simulation_Duration);
-    pred_history.reserve(Simulation_Duration);
-    B_history.reserve(Simulation_Duration);
-
-    pred_history.push_back(init_freq);
-    update_hustory();
     trace("Created {}", *this);
 }
 
+#if 0
 void GNN_Tracker::Track::draw_history() const
 {
     namespace plt = matplotlibcpp;
@@ -42,11 +37,18 @@ void GNN_Tracker::Track::draw_history() const
           "go");
     }
 }
+#endif
 
-void GNN_Tracker::Track::update_hustory()
+void GNN_Tracker::Track::draw_step() const
 {
-    x_history.push_back(x(0));
-    B_history.push_back(B);
+    namespace plt = matplotlibcpp;
+    double tick = static_cast<double>(current_tick);
+    plt::plot(std::vector{ tick - 1, tick },
+      std::vector{ x_prev(0), x(0) },
+      "-r");
+
+    // if (confirmed()) {
+    // }
 }
 
 bool GNN_Tracker::Track::delete_pending() const { return z.missing_count >= Missing_Threshhold; }
@@ -78,15 +80,17 @@ void GNN_Tracker::process(const MeasurementVec &measurements)
     strobe(measurements);
     filter_tarcks();
     kalman_update();
+    draw_history();
     process_free_measurements();
 }
 
 void GNN_Tracker::kalman_predict()
 {
     for (auto &track : tracks) {
+        track.x_prev = track.x;
         track.x = F * track.x;
         track.P = F * track.P * F_T + Q;
-        track.pred_history.push_back(H * track.x);
+        track.B = H * track.P * H_T + R; // Inovation covariance
     }
 }
 
@@ -99,7 +103,6 @@ void GNN_Tracker::strobe(MeasurementVec measurements)
 {
     for (auto &track : tracks) {
         track.z.reset();
-        track.B = H * track.P * H_T + R; // Inovation covariance
 
         std::optional<size_t> strobe_i;
         double min_dist = std::numeric_limits<double>::max();
@@ -131,8 +134,6 @@ void GNN_Tracker::filter_tarcks()
     for (size_t t_i = 0; t_i < tracks.size();) {
         auto &track = tracks[t_i];
         if (track.delete_pending()) {
-            track.update_hustory();
-            track.draw_history();
             ftrace(fg(fmt::color::pale_violet_red), "Deleted {}", track);
             std::swap(track, tracks.back());
             tracks.pop_back();
@@ -154,8 +155,17 @@ void GNN_Tracker::kalman_update()
             track.x = track.x + K * track.v;
             track.P = IKH * track.P * IKH.transpose() + K * R * K.transpose();
         }
+    }
+}
 
-        track.update_hustory();
+void GNN_Tracker::draw_history()
+{
+    namespace plt = matplotlibcpp;
+    for (auto &track : tracks) {
+        if (track.creation_tick == current_tick) continue;
+        plt::plot(std::vector{ current_tick - 1, current_tick },
+          std::vector{ track.x_prev(0), track.x(0) },
+          "-r");
     }
 }
 

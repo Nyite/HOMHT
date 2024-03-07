@@ -1,4 +1,4 @@
-#include "HOMHT/GNN/gnn_tracker.h"
+#include "HOMHT/gnn_tracker.h"
 #include <Eigen/Eigen>
 #include <iostream>
 #include <matplotlibcpp.h>
@@ -12,7 +12,7 @@ int main()
     namespace plt = matplotlibcpp;
     plt::figure_size(1200, 780);
     HOMHT::MeasurementVec measurements;
-    measurements.reserve(64);
+    measurements.reserve(HOMHT::Input_Widown_Width + 1);
 
     using HOMHT::current_tick;
     for (current_tick = 0; current_tick < HOMHT::Simulation_Duration; ++current_tick) {
@@ -24,8 +24,8 @@ int main()
         measurements.clear();
     }
 
-    --current_tick; // Draw up to the last tick
-    for (const auto &track : gnn.tracks) track.draw_history();
+    // --current_tick; // Draw up to the last tick
+    // for (const auto &track : gnn.tracks) track.draw_history();
 
     std::vector<int> xticks(HOMHT::Simulation_Duration);
     int i = -1;
@@ -33,7 +33,7 @@ int main()
     plt::xticks(xticks);
 
     plt::grid(true);
-    plt::legend();
+    // plt::legend();
     plt::show();
 
     return 0;
