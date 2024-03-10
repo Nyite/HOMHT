@@ -6,7 +6,8 @@ namespace HOMHT {
 extern double current_tick;
 /**************** Algorithm parameters ****************/
 constexpr double Pd = 0.3; // Probability of detection
-constexpr double Pf = 0.05; // Probability of false targets
+constexpr double Bft = 0.05; // Dencity of false targets
+constexpr double Bnt = Bft / 5; // Dencity of new targets
 constexpr double Phi_s = 0.1; // Physical model white noise power
 
 // Minimal number of times a track must be assosiated in a row to be consudered for confirmation
