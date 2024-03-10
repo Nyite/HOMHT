@@ -22,6 +22,7 @@ int main()
     for (current_tick = 0; current_tick < HOMHT::Simulation_Duration; ++current_tick) {
         HOMHT::generate_mesurements(measurements);
         gnn.process(measurements);
+        homht.process(measurements);
 
         if (measurements.empty()) continue;
         plt::plot(std::vector<double>(measurements.size(), current_tick), measurements, "sk");
