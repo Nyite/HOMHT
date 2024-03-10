@@ -3,37 +3,17 @@
 #include <Eigen/Eigen>
 #include <fmt/ostream.h>
 #include <iomanip>
-#include <optional>
 
 namespace HOMHT {
-class GNN_Tracker final
-{
-  public:
-    struct Track;
-    std::vector<Track> tracks;
-    void process(const MeasurementVec &measurements);
-
-  private:
-    MeasurementVec free_measurements;
-
-    void strobe(MeasurementVec measurements);
-    void kalman_predict();
-    void filter_tarcks();
-    void kalman_update();
-    void draw_history();
-    void draw_strobe();
-    void process_free_measurements();
-};
-
-struct GNN_Tracker::Track
+struct Track
 {
     Track(const Measurement &init_freq = Target_Freq);
-    inline bool delete_pending() const;
-    inline bool confirmation_panding() const;
-    inline void confirm();
-    inline bool confirmed() const;
-    inline void draw_step() const;
-    inline void draw_strobe() const;
+    bool delete_pending() const;
+    bool confirmation_panding() const;
+    void confirm();
+    bool confirmed() const;
+    void draw_step() const;
+    void draw_strobe() const;
 
     Eigen::Vector2d x, x_prev;
     Eigen::Matrix2d P;
@@ -59,6 +39,6 @@ struct GNN_Tracker::Track
 } // namespace HOMHT
 
 template<>
-struct fmt::formatter<HOMHT::GNN_Tracker::Track> : ostream_formatter
+struct fmt::formatter<HOMHT::Track> : ostream_formatter
 {
 };

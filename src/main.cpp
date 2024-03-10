@@ -1,5 +1,6 @@
-#include "HOMHT/gnn_tracker.h"
+#include "HOMHT/GNN/tracker.h"
 #include <Eigen/Eigen>
+#include <HOMHT/HOMHT/tracker.h>
 #include <any>
 #include <iostream>
 #include <map>
@@ -10,6 +11,7 @@ double HOMHT::current_tick;
 int main()
 {
     HOMHT::GNN_Tracker gnn;
+    HOMHT::HOMHT_Tracker homht;
 
     namespace plt = matplotlibcpp;
     plt::figure_size(1200, 780);
