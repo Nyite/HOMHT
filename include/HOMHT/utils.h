@@ -1,6 +1,9 @@
 #pragma once
+#include <Eigen/Eigen>
+#include <fmt/ostream.h>
 #include <iostream>
 #include <random>
+#include <unordered_set>
 
 template<typename T>
 std::ostream &operator<<(std::ostream &stream, const std::vector<T> &vec)
@@ -8,6 +11,21 @@ std::ostream &operator<<(std::ostream &stream, const std::vector<T> &vec)
     for (const auto &item : vec) stream << item << " ";
     return stream << '\b';
 }
+
+template<typename T>
+std::ostream &operator<<(std::ostream &stream, const std::unordered_set<T> &set)
+{
+    for (const auto &item : set) stream << item << " ";
+    return stream << '\b';
+}
+
+template<typename T>
+struct fmt::formatter<std::unordered_set<T>> : ostream_formatter
+{
+};
+
+void removeRow(Eigen::MatrixXi &matrix, Eigen::Index rowToRemove);
+void removeColumn(Eigen::MatrixXi &matrix, Eigen::Index colToRemove);
 
 namespace HOMHT {
 template<typename Numerical>
