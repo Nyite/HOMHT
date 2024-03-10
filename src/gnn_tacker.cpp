@@ -1,54 +1,45 @@
 #include "HOMHT/gnn_tracker.h"
+#include <any>
 #include <fmt/core.h>
 #include <matplotlibcpp.h>
 
 namespace HOMHT {
 GNN_Tracker::Track::Track(const Measurement &init_freq)
-  : x{ init_freq, 0 }, P(P_init), v{}, B(B_init), id(++creation_count),
+  : x{ init_freq, 0 }, P(P_init), v{}, B(B_init), freq_est(init_freq), id(++creation_count),
     creation_tick(HOMHT::current_tick)
 {
     trace("Created {}", *this);
 }
 
-#if 0
-void GNN_Tracker::Track::draw_history() const
-{
-    namespace plt = matplotlibcpp;
-    std::vector<int> life_ticks(x_history.size());
-    int tick = creation_tick;
-    for (size_t i = 0; tick <= HOMHT::current_tick; ++tick, ++i) life_ticks[i] = tick;
-    plt::plot(life_ticks, x_history, "-r");
-
-    if (confirmed()) {
-        std::vector<double> strobe_upper_bound(B_history.size());
-        std::vector<double> strobe_lower_bound(B_history.size());
-        for (size_t i = 0; i < B_history.size(); ++i) {
-            const auto freq_delta = pow(B_history[i], 5.0 / 8.0);
-            const auto &strobe_center = pred_history[i];
-            strobe_upper_bound[i] = strobe_center + freq_delta;
-            strobe_lower_bound[i] = strobe_center - freq_delta;
-        }
-        plt::plot(life_ticks, strobe_upper_bound, "--b");
-        plt::plot(life_ticks, strobe_lower_bound, "--b");
-
-        plt::named_plot(fmt::format("Confirmed {}", *this),
-          std::vector{ confirmation_tick },
-          std::vector{ x_history[static_cast<size_t>(confirmation_tick - creation_tick)] },
-          "go");
-    }
-}
-#endif
-
 void GNN_Tracker::Track::draw_step() const
 {
     namespace plt = matplotlibcpp;
-    double tick = static_cast<double>(current_tick);
-    plt::plot(std::vector{ tick - 1, tick },
-      std::vector{ x_prev(0), x(0) },
-      "-r");
+    std::map<std::string, std::any> style{ { "zorder", 3 } };
+    if (confirmed()) {
+        style["color"] = "g";
+        style["linewidth"] = 3;
+    } else {
+        style["color"] = "r";
+    }
+    plt::plot<double>({ current_tick - 1, current_tick }, { x_prev(0), x(0) }, style);
+}
 
-    // if (confirmed()) {
-    // }
+void GNN_Tracker::Track::draw_strobe() const
+{
+    const double prev_freq_delta = pow(B_prev, 5.0 / 8.0);
+    const double freq_delta = pow(B, 5.0 / 8.0);
+
+    namespace plt = matplotlibcpp;
+    std::map<std::string, std::any> style{
+        { "zorder", 3 }, { "color", "b" }, { "linestyle", "--" }
+    };
+    plt::plot<double>({ current_tick - 1, current_tick },
+      { prev_freq_est + prev_freq_delta, freq_est + freq_delta },
+      style);
+
+    plt::plot<double>({ current_tick - 1, current_tick },
+      { prev_freq_est - prev_freq_delta, freq_est - freq_delta },
+      style);
 }
 
 bool GNN_Tracker::Track::delete_pending() const { return z.missing_count >= Missing_Threshhold; }
@@ -62,6 +53,15 @@ bool GNN_Tracker::Track::confirmation_panding() const
 void GNN_Tracker::Track::confirm()
 {
     confirmation_tick = HOMHT::current_tick;
+
+    namespace plt = matplotlibcpp;
+    plt::plot({ confirmation_tick - 1 },
+      { x(0) },
+      { { "zorder", 3 },
+        { "color", "g" },
+        { "marker", "o" },
+        { "markersize", 7 },
+        { "label", fmt::format("Подтверждён {}", *this) } });
     ftrace(fg(fmt::color::forest_green), "Confirmed {}", *this);
 }
 
@@ -79,6 +79,7 @@ void GNN_Tracker::process(const MeasurementVec &measurements)
     kalman_predict();
     strobe(measurements);
     filter_tarcks();
+    draw_strobe();
     kalman_update();
     draw_history();
     process_free_measurements();
@@ -88,9 +89,14 @@ void GNN_Tracker::kalman_predict()
 {
     for (auto &track : tracks) {
         track.x_prev = track.x;
+        track.B_prev = track.B;
+
         track.x = F * track.x;
         track.P = F * track.P * F_T + Q;
         track.B = H * track.P * H_T + R; // Inovation covariance
+
+        track.prev_freq_est = track.freq_est;
+        track.freq_est = track.x(0);
     }
 }
 
@@ -134,7 +140,10 @@ void GNN_Tracker::filter_tarcks()
     for (size_t t_i = 0; t_i < tracks.size();) {
         auto &track = tracks[t_i];
         if (track.delete_pending()) {
+            track.draw_step();
+            if (track.confirmed()) track.draw_strobe();
             ftrace(fg(fmt::color::pale_violet_red), "Deleted {}", track);
+
             std::swap(track, tracks.back());
             tracks.pop_back();
             continue;
@@ -158,14 +167,21 @@ void GNN_Tracker::kalman_update()
     }
 }
 
+void GNN_Tracker::draw_strobe()
+{
+    namespace plt = matplotlibcpp;
+    for (auto &track : tracks) {
+        if (!track.confirmed()) continue;
+        track.draw_strobe();
+    }
+}
+
 void GNN_Tracker::draw_history()
 {
     namespace plt = matplotlibcpp;
     for (auto &track : tracks) {
         if (track.creation_tick == current_tick) continue;
-        plt::plot(std::vector{ current_tick - 1, current_tick },
-          std::vector{ track.x_prev(0), track.x(0) },
-          "-r");
+        track.draw_step();
     }
 }
 

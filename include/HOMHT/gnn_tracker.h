@@ -2,6 +2,7 @@
 #include "HOMHT/lib.h"
 #include <Eigen/Eigen>
 #include <fmt/ostream.h>
+#include <iomanip>
 #include <optional>
 
 namespace HOMHT {
@@ -20,6 +21,7 @@ class GNN_Tracker final
     void filter_tarcks();
     void kalman_update();
     void draw_history();
+    void draw_strobe();
     void process_free_measurements();
 };
 
@@ -31,14 +33,16 @@ struct GNN_Tracker::Track
     inline void confirm();
     inline bool confirmed() const;
     inline void draw_step() const;
+    inline void draw_strobe() const;
 
     Eigen::Vector2d x, x_prev;
     Eigen::Matrix2d P;
 
     MeasurementAssociation z;
     double v; // inovation
-    double B; // inovation covariance
+    double B, B_prev; // inovation covariance
     double confirmation_tick = 0;
+    double freq_est, prev_freq_est;
 
     static inline int creation_count = -1;
     int id;
@@ -47,7 +51,7 @@ struct GNN_Tracker::Track
     friend std::ostream &operator<<(std::ostream &stream, const Track &track)
     {
         stream << "GNN Track #" << track.id << ": ";
-        stream << "x = (" << track.x(0) << ", " << track.x(1) << ")";
+        stream << "x = (" << track.x(0) << ", " << std::setprecision(2) << track.x(1) << ")";
         return stream;
     }
 };

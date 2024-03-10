@@ -1,9 +1,11 @@
 #include "HOMHT/gnn_tracker.h"
 #include <Eigen/Eigen>
+#include <any>
 #include <iostream>
+#include <map>
 #include <matplotlibcpp.h>
 
-int HOMHT::current_tick;
+double HOMHT::current_tick;
 
 int main()
 {
@@ -20,20 +22,19 @@ int main()
         gnn.process(measurements);
 
         if (measurements.empty()) continue;
-        plt::plot(std::vector<int>(measurements.size(), current_tick), measurements, "sk");
+        plt::plot(std::vector<double>(measurements.size(), current_tick), measurements, "sk");
         measurements.clear();
     }
 
-    // --current_tick; // Draw up to the last tick
-    // for (const auto &track : gnn.tracks) track.draw_history();
-
-    std::vector<int> xticks(HOMHT::Simulation_Duration);
-    int i = -1;
+    std::vector<double> xticks(HOMHT::Simulation_Duration);
+    double i = -1;
     for (auto &tick : xticks) tick = ++i;
     plt::xticks(xticks);
 
     plt::grid(true);
-    // plt::legend();
+    plt::legend({ { "loc", "lower left" } });
+    plt::xlabel("Такты");
+    plt::ylabel("Фильтры частот");
     plt::show();
 
     return 0;
