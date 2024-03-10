@@ -5,7 +5,7 @@
 #include <fmt/color.h>
 
 namespace HOMHT {
-typedef int Measurement;
+typedef double Measurement;
 typedef std::vector<Measurement> MeasurementVec;
 
 struct MeasurementAssociation

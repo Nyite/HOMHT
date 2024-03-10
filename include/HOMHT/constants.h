@@ -3,7 +3,7 @@
 #include <Eigen/Eigen>
 
 namespace HOMHT {
-extern int current_tick;
+extern double current_tick;
 /**************** Algorithm parameters ****************/
 constexpr double Pd = 0.3; // Probability of detection
 constexpr double Pf = 0.05; // Probability of false targets
@@ -17,7 +17,7 @@ constexpr int Confirmation_Assosiations_Threshhold = 4;
 constexpr int Missing_Threshhold = 3;
 
 /**************** Simulation parameters ****************/
-constexpr int Simulation_Duration = 40; // Total number of simulated ticks
+constexpr double Simulation_Duration = 40.0; // Total number of simulated ticks
 constexpr double Delta_t = 0.1; // Time delta between ticks
 
 constexpr int Target_Freq = 1600; // Freqency of the target
