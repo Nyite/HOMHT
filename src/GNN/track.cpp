@@ -3,14 +3,14 @@
 #include <matplotlibcpp.h>
 
 namespace HOMHT {
-Track::Track(const Measurement &init_freq)
+GNN_Track::GNN_Track(const Measurement &init_freq)
   : x{ init_freq, 0 }, P(P_init), v{}, B(B_init), freq_est(init_freq), id(++creation_count),
     creation_tick(HOMHT::current_tick)
 {
-    trace("Created {}", *this);
+    gnn_trace("Created {}", *this);
 }
 
-void Track::draw_step() const
+void GNN_Track::draw_step() const
 {
     namespace plt = matplotlibcpp;
     std::map<std::string, std::any> style{ { "zorder", 3 } };
@@ -23,7 +23,7 @@ void Track::draw_step() const
     plt::plot<double>({ current_tick - 1, current_tick }, { x_prev(0), x(0) }, style);
 }
 
-void Track::draw_strobe() const
+void GNN_Track::draw_strobe() const
 {
     const double prev_freq_delta = pow(B_prev, 5.0 / 8.0);
     const double freq_delta = pow(B, 5.0 / 8.0);
@@ -41,15 +41,15 @@ void Track::draw_strobe() const
       style);
 }
 
-bool Track::delete_pending() const { return z.missing_count >= Missing_Threshhold; }
+bool GNN_Track::delete_pending() const { return z.missing_count >= Missing_Threshhold; }
 
-bool Track::confirmation_panding() const
+bool GNN_Track::confirmation_panding() const
 {
     return !confirmed() && z.assosiations >= Confirmation_Assosiations_Threshhold
            && z.consecutive_count >= Confirmation_Consecutive_Threshhold;
 }
 
-void Track::confirm()
+void GNN_Track::confirm()
 {
     confirmation_tick = HOMHT::current_tick;
 
@@ -61,8 +61,8 @@ void Track::confirm()
         { "marker", "o" },
         { "markersize", 7 },
         { "label", fmt::format("Подтверждён {}", *this) } });
-    ftrace(fg(fmt::color::forest_green), "Confirmed {}", *this);
+    gnn_ftrace(fg(fmt::color::forest_green), "Confirmed {}", *this);
 }
 
-bool Track::confirmed() const { return confirmation_tick != 0; }
+bool GNN_Track::confirmed() const { return confirmation_tick != 0; }
 } // namespace HOMHT

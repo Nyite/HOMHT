@@ -6,7 +6,7 @@ namespace HOMHT {
 class GNN_Tracker final
 {
   public:
-    std::vector<Track> tracks;
+    std::vector<GNN_Track> tracks;
     void process(const MeasurementVec &measurements);
 
   private:

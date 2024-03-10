@@ -83,7 +83,7 @@ void GNN_Tracker::filter_tarcks()
         if (track.delete_pending()) {
             track.draw_step();
             if (track.confirmed()) track.draw_strobe();
-            ftrace(fg(fmt::color::pale_violet_red), "Deleted {}", track);
+            gnn_ftrace(fg(fmt::color::pale_violet_red), "Deleted {}", track);
 
             std::swap(track, tracks.back());
             tracks.pop_back();

@@ -5,9 +5,9 @@
 #include <iomanip>
 
 namespace HOMHT {
-struct Track
+struct GNN_Track
 {
-    Track(const Measurement &init_freq = Target_Freq);
+    GNN_Track(const Measurement &init_freq = Target_Freq);
     bool delete_pending() const;
     bool confirmation_panding() const;
     void confirm();
@@ -18,7 +18,7 @@ struct Track
     Eigen::Vector2d x, x_prev;
     Eigen::Matrix2d P;
 
-    MeasurementAssociation z;
+    MeasurementAssociation<Measurement> z;
     double v; // inovation
     double B, B_prev; // inovation covariance
     double confirmation_tick = 0;
@@ -28,7 +28,7 @@ struct Track
     int id;
     double creation_tick;
 
-    friend std::ostream &operator<<(std::ostream &stream, const Track &track)
+    friend std::ostream &operator<<(std::ostream &stream, const GNN_Track &track)
     {
         stream << "GNN Track #" << track.id << ": ";
         stream << "x = (" << track.x(0) << ", " << std::setprecision(2) << track.x(1) << ")";
@@ -39,6 +39,6 @@ struct Track
 } // namespace HOMHT
 
 template<>
-struct fmt::formatter<HOMHT::Track> : ostream_formatter
+struct fmt::formatter<HOMHT::GNN_Track> : ostream_formatter
 {
 };
