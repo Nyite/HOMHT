@@ -10,6 +10,8 @@ constexpr double Bft = 0.05; // Dencity of false targets
 constexpr double Bnt = Bft / 5; // Dencity of new targets
 constexpr double Phi_s = 0.1; // Physical model white noise power
 
+constexpr size_t Max_Hypothesis_Number = 1000;
+
 // Minimal number of times a track must be assosiated in a row to be consudered for confirmation
 constexpr int Confirmation_Consecutive_Threshhold = 3;
 // Minimal number of times a track must be assosiated to be consudered for confirmation
@@ -27,6 +29,9 @@ constexpr int Target_Freq_Lower_Bound = Target_Freq - Input_Widown_Width / 2;
 constexpr int Target_Freq_Upper_Bound = Target_Freq + Input_Widown_Width / 2;
 
 /**************** Init parameters ****************/
+constexpr double ft_hyp_init_prob = Bft / (Bnt + Bft);
+constexpr double nt_hyp_init_prob = Bnt / (Bnt + Bft);
+
 constexpr double Delta_Freq = 5;
 constexpr double Sigma_Freq = Delta_Freq / 3.0;
 constexpr double Delta_Change = 0.1;
